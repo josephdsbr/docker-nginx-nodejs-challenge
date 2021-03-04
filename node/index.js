@@ -8,18 +8,43 @@ const config = {
   database: 'nodedb'
 }
 
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
+const faker = require('faker');
 
-const connection = mysql.createConnection(config);
+async function connect() {
+  const connection = await mysql.createConnection(config);
 
-const sql = `INSERT INTO people (name) values('Wesley')`;
-connection.query(sql);
-connection.end();
+  connection.connect(err => {
+    if (err) throw err;
+    console.log('Conectado com sucesso ao Banco de Dados.')
+  })
+
+  return connection;
+}
+
+async function init() {
+  const connection = await connect();
+  const sql = `INSERT INTO people (name) values('${faker.name.findName()}')`;
+  connection.query(sql);
+  connection.end();
+}
+
+async function selectPeople() {
+  const conn = await connect();
+  const [people,] = await conn.execute('SELECT * FROM people;');
+  conn.end();
+  return people;
+}
 
 app.get('/', async (req, res) => {
-  let result = '<h1>FullCycle</h1>';
+  const people = await selectPeople();
+
+  const result = '<h1>Full Cycle Rocks!</h1><br />' + people.map(person => person.name).reduce((a, b) => `${a} <br /><p>${b}</p>`);
   res.write(result);
   res.end();
 });
 
-app.listen(port, () => console.log(`Rodando na porta: ${port}`));
+app.listen(port, () => {
+  init();
+  console.log(`Rodando na porta: ${port}`);
+});

@@ -1,6 +1,5 @@
 FROM node:15
 WORKDIR /usr/src/app
-
 RUN apt-get update && apt-get install -y wget
 
 ENV DOCKERIZE_VERSION v0.6.1
@@ -9,6 +8,6 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 COPY . .
-RUN npm i
+RUN npm install
 EXPOSE 3000
 CMD node index.js
